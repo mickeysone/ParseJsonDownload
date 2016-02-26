@@ -1,25 +1,18 @@
 package com.bluewindsolution.kare.parsejsondownload;
 
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,16 +26,23 @@ public class MainActivity extends AppCompatActivity {
 
     private String lang, stToast  = "Please connect to the internet.";
 
-    CheckInternetConnection checkInternetConnection = new CheckInternetConnection(this);
+    private CheckInternetConnection checkInternetConnection = new CheckInternetConnection(this);
 
-    RecyclerView recyclerView;
-    RecyclerView.LayoutManager layoutManager;
-    MissionAdapter missionAdapter;
+    private RecyclerView recyclerView;
+    private RecyclerView.LayoutManager layoutManager;
+    private MissionAdapter missionAdapter;
+
+    private ProgressDialog pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        pd = new ProgressDialog(this);
+        pd.setIndeterminate(true);
+        pd.setCancelable(false);
+        pd.setMessage("Loading. Please wait...");
 
         if (!checkInternetConnection.isNetworkConnected()) {
             checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
@@ -82,6 +82,12 @@ public class MainActivity extends AppCompatActivity {
     public class GetMainPageData extends AsyncTask<String, Integer, ArrayList<MissionData>> {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pd.show();
+        }
+
+        @Override
         protected ArrayList<MissionData> doInBackground(String... params) {
             HttpURLConnection connection = null;
             BufferedReader reader = null;
@@ -105,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
                 String finalJson = "";
                 finalJson = buffer.toString();
 
-                //ArrayList<MissionData> arrLsMzData = ParseJson.getMissionData(finalJson);
-
                 return ParseJson.getMissionData(finalJson);
 
             } catch (MalformedURLException e) {
@@ -124,6 +128,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             return null;
 
         }
@@ -131,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<MissionData> result) {
             super.onPostExecute(result);
+            pd.dismiss();
 
             recyclerView = (RecyclerView) findViewById(R.id.rcv_mainpage);
             layoutManager = new LinearLayoutManager(MainActivity.this);
@@ -151,6 +162,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
     }
 }
