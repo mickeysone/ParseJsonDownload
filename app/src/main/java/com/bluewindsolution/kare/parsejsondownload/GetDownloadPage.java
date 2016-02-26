@@ -20,8 +20,8 @@ import java.util.ArrayList;
  */
 public class GetDownloadPage extends AsyncTask<String, Integer, String> {
 
-    Context context;
-    String[] appId;
+    private Context context;
+    private String[] appId;
 
     public GetDownloadPage(Context context) {
         this.context = context;

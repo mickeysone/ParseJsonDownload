@@ -24,9 +24,9 @@ import java.util.ArrayList;
  */
 public class MissionAdapter extends RecyclerView.Adapter<MissionAdapter.DataObjectHolder>{
 
-    Context context;
+    private Context context;
 
-    ArrayList<MissionData> missionDataset;
+    private ArrayList<MissionData> missionDataset;
 
     private static OnItemClickListener listener;
 

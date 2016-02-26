@@ -1,24 +1,20 @@
 package com.bluewindsolution.kare.parsejsondownload;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -108,7 +104,7 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
         switch (v.getId()) {
             case R.id.btn_gameDetail_download:
                 CheckInternetConnection checkInternetConnection = new CheckInternetConnection(this);
-                if (!checkInternetConnection.isNetworkConnected()) {
+                if (!checkInternetConnection.isInternetAvailable()) {
                     checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
                 } else {
                     new GetDownloadPage(GameDetailActivity.this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://genetic-plus.org/presite/kare/api/getGame.php?id=" + appId);

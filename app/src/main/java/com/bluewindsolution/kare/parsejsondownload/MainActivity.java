@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         pd.setCancelable(false);
         pd.setMessage("Loading. Please wait...");
 
-        if (!checkInternetConnection.isNetworkConnected()) {
+        if (!checkInternetConnection.isInternetAvailable()) {
             checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
         } else {
             lang = "TH";
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                if (!checkInternetConnection.isNetworkConnected()) {
+                if (!checkInternetConnection.isInternetAvailable()) {
                     checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
                 } else {
                     recreate();
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (!checkInternetConnection.isNetworkConnected()) {
+        if (!checkInternetConnection.isInternetAvailable()) {
             checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
         }
     }
@@ -152,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             missionAdapter.SetOnItemClickListener(new MissionAdapter.OnItemClickListener() {
                 @Override
                 public void OnItemClick(String appId, String appName, View view) {
-                    if (!checkInternetConnection.isNetworkConnected()) {
+                    if (!checkInternetConnection.isInternetAvailable()) {
                         checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
                     } else {
                         Intent intent = new Intent(MainActivity.this, GameDetailActivity.class);

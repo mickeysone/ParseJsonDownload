@@ -5,10 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.os.Environment;
-import android.util.Log;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
@@ -28,22 +25,27 @@ import java.util.ArrayList;
  * Created by Pruxasin on 29/1/2559.
  */
 public class DownloadFile extends AsyncTask<String, Integer, String> {
-    Context context;
-    ProgressDialog pd;
-    ArrayList<ArrayList<String>> allArrayList = new ArrayList<ArrayList<String>>();
-    ArrayList<ArrayList<String>> allLinksImg = new ArrayList<ArrayList<String>>();
-    ArrayList<ArrayList<String>> allLinksFile = new ArrayList<ArrayList<String>>();
-    String appId = "";
-    String basePatch = "";
-    CheckInternetConnection checkInternetConnection;
+    private Context context;
+    private ProgressDialog pd;
+
+    private ArrayList<ArrayList<String>> allArrayList = new ArrayList<ArrayList<String>>();
+    private ArrayList<ArrayList<String>> allLinksImg = new ArrayList<ArrayList<String>>();
+    private ArrayList<ArrayList<String>> allLinksFile = new ArrayList<ArrayList<String>>();
+
+    private String appId = "";
+    private String basePatch = "";
+
+    private  CheckInternetConnection checkInternetConnection;
     boolean resultCheckConn = true;
-    String stToast = "Lost internet connection. Please download again.";
-    Bitmap bitmap = null;
-    InputStream inputStream = null;
-    String realURl = "";
-    int countProgress = 0;
-    int sumLinks = 0;
-    StringBuffer stPath = new StringBuffer();
+    private String stToast = "Lost internet connection. Please download again.";
+
+    private Bitmap bitmap = null;
+    private InputStream inputStream = null;
+    private String realURl = "";
+
+    private int countProgress = 0;
+    private int sumLinks = 0;
+    private StringBuffer stPath = new StringBuffer();
 
     public DownloadFile(Context context, String basePatch, String appId, ArrayList<ArrayList<String>> allArrayList) {
         this.context = context;
@@ -112,7 +114,7 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
     @Override
     protected String doInBackground(String... params) {
         for (int i = 0; i < allLinksImg.size(); i++) {
-            if (!checkInternetConnection.isNetworkConnected()) {
+            if (!checkInternetConnection.isInternetAvailable()) {
                 resultCheckConn = false;
                 break;
             } else {
@@ -132,7 +134,7 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
             }
         }
         for (int i = 0; i < allLinksFile.size(); i++) {
-            if (!checkInternetConnection.isNetworkConnected()) {
+            if (!checkInternetConnection.isInternetAvailable()) {
                 resultCheckConn = false;
                 break;
             } else {
@@ -218,7 +220,7 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
         }
 
         for (int i = 0; i < LinksImg.size(); i++) {
-            if (!checkInternetConnection.isNetworkConnected()) {
+            if (!checkInternetConnection.isInternetAvailable()) {
                 resultCheckConn = false;
                 break;
             } else {
@@ -287,7 +289,7 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
         InputStream is = null;
 
         for (int i = 0; i < LinksFile.size(); i++) {
-            if (!checkInternetConnection.isNetworkConnected()) {
+            if (!checkInternetConnection.isInternetAvailable()) {
                 resultCheckConn = false;
                 break;
             } else {

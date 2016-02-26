@@ -22,8 +22,8 @@ import java.util.ArrayList;
  */
 public class MissionDetailAdapter extends RecyclerView.Adapter<MissionDetailAdapter.DataObjectHolder> {
 
-    ArrayList<String> detailDataset;
-    Context context;
+    private ArrayList<String> detailDataset;
+    private Context context;
 
     public MissionDetailAdapter(ArrayList<String> detailDataset, Context context) {
         this.detailDataset = detailDataset;
