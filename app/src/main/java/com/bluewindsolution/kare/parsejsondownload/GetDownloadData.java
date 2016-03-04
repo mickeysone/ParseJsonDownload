@@ -3,6 +3,7 @@ package com.bluewindsolution.kare.parsejsondownload;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,12 +19,15 @@ import java.util.ArrayList;
 /**
  * Created by Pruxasin on 25/1/2559.
  */
-public class GetDownloadPage extends AsyncTask<String, Integer, String> {
+public class GetDownloadData extends AsyncTask<String, Integer, String> {
 
     private Context context;
     private String[] appId;
 
-    public GetDownloadPage(Context context) {
+    public static String statusMissionPath;
+    public static String basePatch = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/";
+
+    public GetDownloadData(Context context) {
         this.context = context;
     }
 
@@ -100,29 +104,29 @@ public class GetDownloadPage extends AsyncTask<String, Integer, String> {
         if (infoGameDataArrLs != null) {
             for (InfoGameData infg : infoGameDataArrLs) {
                 //imgTitle = infg.i;
-                appIdName[0] = infg.t;
-                appIdName[1] = infg.i;
-                linkImgTitle.add(";" + infg.i);
-                linkFileTitle.add(";" + infg.s);
+                appIdName[0] = infg.getT();
+                appIdName[1] = infg.getI();
+                linkImgTitle.add(";" + infg.getI());
+                linkFileTitle.add(";" + infg.getS());
                 for (int i = 0; i < infg.infoGameDataItems.size(); i++) {
-                    linkImgItem.add(infg.infoGameDataItems.get(i).no + ";" +  infg.infoGameDataItems.get(i).i);
-                    linkFileItem.add(infg.infoGameDataItems.get(i).no + ";" +  infg.infoGameDataItems.get(i).s);
+                    linkImgItem.add(infg.infoGameDataItems.get(i).getNo() + ";" +  infg.infoGameDataItems.get(i).getI());
+                    linkFileItem.add(infg.infoGameDataItems.get(i).getNo() + ";" +  infg.infoGameDataItems.get(i).getS());
                 }
                 for (int i = 0; i < infg.infoGameDataLearnings.size(); i++) {
-                    linkImgLearning.add(infg.infoGameDataLearnings.get(i).no + ";" + infg.infoGameDataLearnings.get(i).i);
-                    linkFileLearning.add(infg.infoGameDataLearnings.get(i).no + ";" + infg.infoGameDataLearnings.get(i).s);
-                    linkFileLearning.add(infg.infoGameDataLearnings.get(i).no + ";" + infg.infoGameDataLearnings.get(i).v);
+                    linkImgLearning.add(infg.infoGameDataLearnings.get(i).getNo() + ";" + infg.infoGameDataLearnings.get(i).getI());
+                    linkFileLearning.add(infg.infoGameDataLearnings.get(i).getNo() + ";" + infg.infoGameDataLearnings.get(i).getS());
+                    linkFileLearning.add(infg.infoGameDataLearnings.get(i).getNo() + ";" + infg.infoGameDataLearnings.get(i).getV());
                 }
                 for (int i = 0; i < infg.infoGameDataDodonts.size(); i++) {
-                    linkImgDodont.add(infg.infoGameDataDodonts.get(i).answer + ";" + infg.infoGameDataDodonts.get(i).i);
-                    linkFileDodont.add(infg.infoGameDataDodonts.get(i).answer + ";" + infg.infoGameDataDodonts.get(i).s);
-                    linkFileDodont.add(infg.infoGameDataDodonts.get(i).answer + ";" + infg.infoGameDataDodonts.get(i).v);
+                    linkImgDodont.add(infg.infoGameDataDodonts.get(i).getAnswer()+ ";" + infg.infoGameDataDodonts.get(i).getI());
+                    linkFileDodont.add(infg.infoGameDataDodonts.get(i).getAnswer() + ";" + infg.infoGameDataDodonts.get(i).getS());
+                    linkFileDodont.add(infg.infoGameDataDodonts.get(i).getAnswer() + ";" + infg.infoGameDataDodonts.get(i).getV());
                 }
                 for (int i = 0; i < infg.infoGameDataCommunications.size(); i++) {
-                    linkFileCommu.add(infg.infoGameDataCommunications.get(i).qid + ";" + infg.infoGameDataCommunications.get(i).s);
+                    linkFileCommu.add(infg.infoGameDataCommunications.get(i).getQid() + ";" + infg.infoGameDataCommunications.get(i).getS());
                     for (int j = 0; j < infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.size(); j++) {
-                        linkImgCommuAnswer.add(infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).qid + ";" + infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).i);
-                        linkFileCommuAnswer.add(infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).qid + ";" + infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).s);
+                        linkImgCommuAnswer.add(infg.infoGameDataCommunications.get(i).getQid() + ";" + infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).getQid() + ";" + infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).getI());
+                        linkFileCommuAnswer.add(infg.infoGameDataCommunications.get(i).getQid() + ";" + infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).getQid() + ";" + infg.infoGameDataCommunications.get(i).infoGameDataCommunicationAnswers.get(j).getS());
                     }
                 }
             }
@@ -139,22 +143,34 @@ public class GetDownloadPage extends AsyncTask<String, Integer, String> {
             allArrayList.add(linkFileCommuAnswer);
         }
 
-        String basePatch = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/" + appId[1];
-        File Folder = new File(basePatch);
+        String missionPath = basePatch + appId[1];
+
+        File Folder = new File(missionPath);
         if (!Folder.exists()) {
             Folder.mkdirs();
         }
 
-        try {
-            File createTxtFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/", "Mission.txt");
+        File nomediaFile = new File(basePatch, ".nomedia");
+        if (!nomediaFile.exists()) {
+            try {
+                nomediaFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+/*        try {
+            File createTxtFile = new File(basePatch, "Mission.txt");
             FileWriter allPathInApp = new FileWriter(createTxtFile,true);
             allPathInApp.append(appId[1] + "=" + appIdName[0] + "=" + appIdName[1] + "\n");
             allPathInApp.flush();
             allPathInApp.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
-        new DownloadFile(context, basePatch, appId[1], allArrayList).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://genetic-plus.org/presite/kare/");
+        statusMissionPath = appId[1] + "=" + appIdName[0] + "=" + appIdName[1];
+
+        new DownloadFile(context, missionPath, appId[1], allArrayList).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://genetic-plus.org/presite/kare/");
     }
 }

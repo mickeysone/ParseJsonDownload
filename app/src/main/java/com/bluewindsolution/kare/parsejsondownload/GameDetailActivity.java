@@ -1,7 +1,7 @@
 package com.bluewindsolution.kare.parsejsondownload;
 
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
@@ -9,9 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,12 +27,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Connection;
 import java.util.ArrayList;
 
 public class GameDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView txtAppName, txtAppView, txtAppDownload, txtAppDetail;
-    private Button btnDelete, btnDownload;
+    private Button btnDelete, btnDownload, btnDisplay;
 
     private String appId = "", stToast  = "Please connect to the internet.";;
 
@@ -38,32 +41,27 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
     private RecyclerView.LayoutManager layoutManager;
     private MissionDetailAdapter missionDetailAdapter;
 
-    private ProgressDialog pd;
+    //private ProgressBar pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_detail);
-
-        pd = new ProgressDialog(this);
-        pd.setIndeterminate(true);
-        pd.setCancelable(false);
-        pd.setMessage("Loading. Please wait...");
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        initialWidget();
         appId = getIntent().getExtras().getString("appID");
 
-        initialWidget();
-
-        new GetGameDetailData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://genetic-plus.org/presite/kare/api/getGameDetail.php?id=" + appId);
+        if (!CheckInternetConnection.isInternetAvailable(this)) {
+            CheckInternetConnection.showNotifications(this, stToast, Toast.LENGTH_SHORT);
+           // pb.setVisibility(View.GONE);
+        } else {
+            new GetGameDetailData().execute("http://genetic-plus.org/presite/kare/api/getGameDetail.php?id=" + appId);
+        }
 
         File createTxtFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/", "Mission.txt");
-        if (!createTxtFile.exists()) {
-
-        } else {
+        if (createTxtFile.exists()) {
             try {
-                String [] allMissionPath = getStringFromFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/Mission.txt");
+                String [] allMissionPath = GameDataManager.getStringFromFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/Mission.txt");
                 for (int i = 0; i < allMissionPath.length; i++) {
                     if (allMissionPath[i].startsWith(appId)) {
                         btnDownload.setEnabled(false);
@@ -97,17 +95,25 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
         btnDownload.setOnClickListener(this);
         btnDelete = (Button) findViewById(R.id.btn_gameDetail_delete);
         btnDelete.setOnClickListener(this);
+        btnDisplay = (Button) findViewById(R.id.btn_gameDetail_display);
+        btnDisplay.setOnClickListener(this);
+
+        recyclerView = (RecyclerView) findViewById(R.id.rcv_gametail);
+        layoutManager = new LinearLayoutManager(GameDetailActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        /*pb = (ProgressBar) findViewById(R.id.pb_gamedetailpage);
+        pb.setVisibility(View.VISIBLE);*/
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_gameDetail_download:
-                CheckInternetConnection checkInternetConnection = new CheckInternetConnection(this);
-                if (!checkInternetConnection.isInternetAvailable()) {
-                    checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
+                if (!CheckInternetConnection.isInternetAvailable(this)) {
+                    CheckInternetConnection.showNotifications(this, stToast, Toast.LENGTH_SHORT);
                 } else {
-                    new GetDownloadPage(GameDetailActivity.this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://genetic-plus.org/presite/kare/api/getGame.php?id=" + appId);
+                    new GetDownloadData(GameDetailActivity.this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://genetic-plus.org/presite/kare/api/getGame.php?id=" + appId);
                     btnDelete.setEnabled(true);
                     btnDownload.setEnabled(false);
                 }
@@ -119,32 +125,43 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
                 dialog.setMessage("Do you want to delete?");
                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        //ลบไฟล์ตาม path ที่มีในไฟล์ .txt
                         File allFilePathInText = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/" + appId);
                         if (allFilePathInText.exists()) {
                             try {
-                                String[] arrAllPath = getStringFromFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/" + appId + "/" + appId + ".txt");
-                                for (int i = arrAllPath.length - 1; i >= 0; i--) {
-                                    File file = new File(arrAllPath[i]);
-                                    if (file.exists()) {
-                                        file.delete();
+                                File appIdTextFile = new File(allFilePathInText.toString()  + "/" + appId + ".txt");
+                                if (appIdTextFile.exists()){
+                                    String[] arrAllPath = GameDataManager.getStringFromFile(appIdTextFile.toString());
+                                    for (int i = arrAllPath.length - 1; i >= 0; i--) {
+                                        File file = new File(arrAllPath[i]);
+                                        if (file.exists()) {
+                                            file.delete();
+                                        }
+                                    }
+                                    allFilePathInText.delete();
+                                } else {
+                                    File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/" + appId);
+                                    if (path.isDirectory()) {
+                                        DeleteFolder(path);
+                                        path.delete();
                                     }
                                 }
-                                allFilePathInText.delete();
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
 
-                            File createTxtFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/", "Mission.txt");
-                            if (createTxtFile.exists()) {
+                            //อัปเดต Mission ในไฟล์ Mission.txt
+                            File createMissionTxtFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/", "Mission.txt");
+                            if (createMissionTxtFile.exists()) {
                                 try {
-                                    String[] allMissionPath = getStringFromFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/Mission.txt");
+                                    String[] allMissionPath = GameDataManager.getStringFromFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Kare/Mission/Mission.txt");
                                     StringBuffer stBuffer = new StringBuffer();
                                     for (int i = 0; i < allMissionPath.length; i++) {
-                                        if (!allMissionPath[i].startsWith(appId)) {
+                                        if (!allMissionPath[i].startsWith(appId) && allMissionPath[i].length() > 0) {
                                             stBuffer.append(allMissionPath[i] + "\n");
                                         }
                                     }
-                                    FileWriter allPathInApp = new FileWriter(createTxtFile);
+                                    FileWriter allPathInApp = new FileWriter(createMissionTxtFile);
                                     allPathInApp.append(stBuffer);
                                     allPathInApp.flush();
                                     allPathInApp.close();
@@ -157,6 +174,8 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
                             btnDelete.setEnabled(false);
                             dialog.cancel();
                             Toast.makeText(GameDetailActivity.this, "Delete files complete.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(GameDetailActivity.this, "file Not Found.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -197,8 +216,12 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
                     btnDelete.setEnabled(false);
                     Toast.makeText(this, "Delete files complete.", Toast.LENGTH_SHORT).show();
                 }*/
+                break;
 
-
+            case R.id.btn_gameDetail_display:
+                Intent intent = new Intent(GameDetailActivity.this, DisplayFileActivity.class);
+                intent.putExtra("appID", appId);
+                startActivity(intent);
                 break;
         }
     }
@@ -208,7 +231,7 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.show();
+//            pb.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -265,51 +288,33 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
         @Override
         protected void onPostExecute(ArrayList<DetailData> result) {
             super.onPostExecute(result);
-            pd.dismiss();
+//            pb.setVisibility(View.GONE);
 
             if (result != null) {
-                txtAppName.setText(result.get(0).name);
-                txtAppView.setText("View: " + "\n" + result.get(0).view);
-                txtAppDownload.setText("Download: "+ "\n" +result.get(0).download);
-                txtAppDetail.setText(result.get(0).detail);
+                txtAppName.setText(result.get(0).getName());
+                txtAppView.setText("View: " + result.get(0).getView());
+                txtAppDownload.setText("Download: " + result.get(0).getDownload());
+                txtAppDetail.setText(result.get(0).getDetail());
 
                 ArrayList<String> gameDetailImg = new ArrayList<String>();
-                gameDetailImg.add(result.get(0).img1);
-                gameDetailImg.add(result.get(0).img2);
-                gameDetailImg.add(result.get(0).img3);
-                gameDetailImg.add(result.get(0).img4);
-                gameDetailImg.add(result.get(0).img5);
+                gameDetailImg.add(result.get(0).getImg1());
+                gameDetailImg.add(result.get(0).getImg2());
+                gameDetailImg.add(result.get(0).getImg3());
+                gameDetailImg.add(result.get(0).getImg4());
+                gameDetailImg.add(result.get(0).getImg5());
 
-                recyclerView = (RecyclerView) findViewById(R.id.rcv_gametail);
-                layoutManager = new LinearLayoutManager(GameDetailActivity.this);
-                recyclerView.setLayoutManager(layoutManager);
-                missionDetailAdapter = new MissionDetailAdapter(gameDetailImg, GameDetailActivity.this);
-                recyclerView.setAdapter(missionDetailAdapter);
+                if (gameDetailImg != null){
+                    missionDetailAdapter = new MissionDetailAdapter(gameDetailImg, GameDetailActivity.this);
+                    recyclerView.setAdapter(missionDetailAdapter);
+                } else {
+                    missionDetailAdapter = new MissionDetailAdapter(new ArrayList<String>(), GameDetailActivity.this);
+                    recyclerView.setAdapter(missionDetailAdapter);
+                }
             }
         }
     }
 
-    public static String[] getStringFromFile (String filePath) throws Exception {
-        File fl = new File(filePath);
-        FileInputStream fin = new FileInputStream(fl);
-        String ret = convertStreamToString(fin);
-        fin.close();
-        String[] arrAllMissionPath = ret.split("\\r?\\n");
-        return arrAllMissionPath;
-    }
-
-    public static String convertStreamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        reader.close();
-        return sb.toString();
-    }
-
-/*    public void DeleteFolder(File directory) {
+    public void DeleteFolder(File directory) {
         if (directory.isDirectory()) {
             File[] subFolder = directory.listFiles();
             if (subFolder != null) {
@@ -322,7 +327,7 @@ public class GameDetailActivity extends AppCompatActivity implements View.OnClic
                 }
             }
         }
-    }*/
+    }
 }
 
 

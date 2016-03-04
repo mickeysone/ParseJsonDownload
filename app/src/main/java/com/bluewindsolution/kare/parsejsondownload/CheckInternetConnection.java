@@ -16,22 +16,23 @@ import java.net.InetAddress;
  * Created by Pruxasin on 10/2/2559.
  */
 public class CheckInternetConnection {
-    Context context;
+/*    Context context;
 
-    public CheckInternetConnection(Context mainActivity) {
-        this.context = mainActivity;
-    }
+    public CheckInternetConnection(Context context) {
+        this.context = context;
+    }*/
 
-    public boolean isInternetAvailable() {
+    public static boolean isInternetAvailable(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
-        if (networkInfo != null && networkInfo.isConnectedOrConnecting() && isOnline()) {
+        if (networkInfo != null && networkInfo.isConnectedOrConnecting()) {
             return true;
         }
         return false;
     }
 
+/*
     public Boolean isOnline() {
         try {
             Process p1 = java.lang.Runtime.getRuntime().exec("ping -c 1 www.google.com");
@@ -43,8 +44,9 @@ public class CheckInternetConnection {
         }
         return false;
     }
+*/
 
-    public void showNotifications(String stToast, int length) {
+    public static void showNotifications(Context context, String stToast, int length) {
         Toast.makeText(context, stToast, length).show();
     }
 }

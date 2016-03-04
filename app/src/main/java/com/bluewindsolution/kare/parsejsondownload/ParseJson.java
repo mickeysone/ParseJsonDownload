@@ -15,10 +15,9 @@ public class ParseJson {
 
         try {
             JSONArray parentArray = new JSONArray(json);
-            JSONObject finalObject;
 
             for (int i = 0; i < parentArray.length(); i++) {
-                finalObject = parentArray.getJSONObject(i);
+                JSONObject finalObject = parentArray.getJSONObject(i);
                 MissionData mzData = new MissionData();
                 mzData.setName(finalObject.getString("name"));
                 mzData.setLang(finalObject.getString("lang"));
@@ -42,20 +41,19 @@ public class ParseJson {
 
         try {
             JSONArray parentArray = new JSONArray(json);
-            JSONObject finalObject;
 
             for (int i = 0; i < parentArray.length(); i++) {
-                finalObject = parentArray.getJSONObject(i);
+                JSONObject finalObject = parentArray.getJSONObject(i);
                 DetailData detailData = new DetailData();
-                detailData.name = finalObject.getString("name");
-                detailData.detail = finalObject.getString("detail");
-                detailData.view = finalObject.getString("view");
-                detailData.download = finalObject.getString("download");
-                detailData.img1 = finalObject.getString("img1");
-                detailData.img2 = finalObject.getString("img2");
-                detailData.img3 = finalObject.getString("img3");
-                detailData.img4 = finalObject.getString("img4");
-                detailData.img5 = finalObject.getString("img5");
+                detailData.setName(finalObject.getString("name"));
+                detailData.setDetail(finalObject.getString("detail"));
+                detailData.setView(finalObject.getString("view"));
+                detailData.setDownload(finalObject.getString("download"));
+                detailData.setImg1(finalObject.getString("img1"));
+                detailData.setImg2(finalObject.getString("img2"));
+                detailData.setImg3(finalObject.getString("img3"));
+                detailData.setImg4(finalObject.getString("img4"));
+                detailData.setImg5(finalObject.getString("img5"));
 
                 result.add(detailData);
             }
@@ -71,27 +69,26 @@ public class ParseJson {
 
         try {
             JSONArray parentArray = new JSONArray(json);
-            JSONObject finalObject = null;
 
             for (int i = 0; i < parentArray.length(); i++) {
-                finalObject = parentArray.getJSONObject(i);
+                JSONObject finalObject = parentArray.getJSONObject(i);
                 InfoGameData infoGameData = new InfoGameData();
-                infoGameData.id = finalObject.getString("id");
-                infoGameData.t = finalObject.getString("t");
-                infoGameData.i = finalObject.getString("i");
-                infoGameData.s = finalObject.getString("s");
+                infoGameData.setId(finalObject.getString("id"));
+                infoGameData.setT(finalObject.getString("t"));
+                infoGameData.setI(finalObject.getString("i"));
+                infoGameData.setS(finalObject.getString("s"));
 
                 JSONArray itemArray = finalObject.getJSONArray("item");
-                infoGameData.infoGameDataItems = getInfoGameDataItem(itemArray);
+                infoGameData.setInfoGameDataItems(getInfoGameDataItem(itemArray));
 
                 JSONArray learningArray = finalObject.getJSONArray("learning");
-                infoGameData.infoGameDataLearnings = getInfoGameDataLearning(learningArray);
+                infoGameData.setInfoGameDataLearnings(getInfoGameDataLearning(learningArray));
 
                 JSONArray dodontArray = finalObject.getJSONArray("dodont");
-                infoGameData.infoGameDataDodonts = getInfoGameDataDodont(dodontArray);
+                infoGameData.setInfoGameDataDodonts(getInfoGameDataDodont(dodontArray));
 
                 JSONArray communicationArray = finalObject.getJSONArray("communication");
-                infoGameData.infoGameDataCommunications = getInfoGameDataCommunication(communicationArray);
+                infoGameData.setInfoGameDataCommunications(getInfoGameDataCommunication(communicationArray));
 
                 result.add(infoGameData);
             }
@@ -109,10 +106,10 @@ public class ParseJson {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject finalObjectItem = jsonArray.getJSONObject(i);
                 InfoGameDataItem infoGameDataItem = new InfoGameDataItem();
-                infoGameDataItem.no = finalObjectItem.getString("no");
-                infoGameDataItem.t = finalObjectItem.getString("t");
-                infoGameDataItem.i = finalObjectItem.getString("i");
-                infoGameDataItem.s = finalObjectItem.getString("s");
+                infoGameDataItem.setNo(finalObjectItem.getString("no"));
+                infoGameDataItem.setT(finalObjectItem.getString("t"));
+                infoGameDataItem.setI(finalObjectItem.getString("i"));
+                infoGameDataItem.setS(finalObjectItem.getString("s"));
 
                 result.add(infoGameDataItem);
             }
@@ -130,11 +127,11 @@ public class ParseJson {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject finalObjectLearning = jsonArray.getJSONObject(i);
                 InfoGameDataLearning infoGameDataLearning = new InfoGameDataLearning();
-                infoGameDataLearning.no = finalObjectLearning.getString("no");
-                infoGameDataLearning.t = finalObjectLearning.getString("t");
-                infoGameDataLearning.i = finalObjectLearning.getString("i");
-                infoGameDataLearning.s = finalObjectLearning.getString("s");
-                infoGameDataLearning.v = finalObjectLearning.getString("v");
+                infoGameDataLearning.setNo(finalObjectLearning.getString("no"));
+                infoGameDataLearning.setT(finalObjectLearning.getString("t"));
+                infoGameDataLearning.setI(finalObjectLearning.getString("i"));
+                infoGameDataLearning.setS(finalObjectLearning.getString("s"));
+                infoGameDataLearning.setV(finalObjectLearning.getString("v"));
 
                 result.add(infoGameDataLearning);
             }
@@ -154,11 +151,11 @@ public class ParseJson {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject finalObjectDodont = jsonArray.getJSONObject(i);
                 InfoGameDataDodont infoGameDataDodont = new InfoGameDataDodont();
-                infoGameDataDodont.answer = finalObjectDodont.getString("answer");
-                infoGameDataDodont.t = finalObjectDodont.getString("t");
-                infoGameDataDodont.i = finalObjectDodont.getString("i");
-                infoGameDataDodont.s = finalObjectDodont.getString("s");
-                infoGameDataDodont.v = finalObjectDodont.getString("v");
+                infoGameDataDodont.setAnswer(finalObjectDodont.getString("answer"));
+                infoGameDataDodont.setT(finalObjectDodont.getString("t"));
+                infoGameDataDodont.setI(finalObjectDodont.getString("i"));
+                infoGameDataDodont.setS(finalObjectDodont.getString("s"));
+                infoGameDataDodont.setV(finalObjectDodont.getString("v"));
 
                 result.add(infoGameDataDodont);
             }
@@ -176,12 +173,12 @@ public class ParseJson {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject finalObjectCommunication = jsonArray.getJSONObject(i);
                 InfoGameDataCommunication infoGameDataCommunication = new InfoGameDataCommunication();
-                infoGameDataCommunication.qid = finalObjectCommunication.getString("qid");
-                infoGameDataCommunication.t = finalObjectCommunication.getString("t");
-                infoGameDataCommunication.s = finalObjectCommunication.getString("s");
+                infoGameDataCommunication.setQid(finalObjectCommunication.getString("qid"));
+                infoGameDataCommunication.setT(finalObjectCommunication.getString("t"));
+                infoGameDataCommunication.setS(finalObjectCommunication.getString("s"));
 
                 JSONArray communicationAnswerArray = finalObjectCommunication.getJSONArray("answer");
-                infoGameDataCommunication.infoGameDataCommunicationAnswers = getInfoGameDataCommunicationAnswer(communicationAnswerArray);
+                infoGameDataCommunication.setInfoGameDataCommunicationAnswers(getInfoGameDataCommunicationAnswer(communicationAnswerArray));
 
                 result.add(infoGameDataCommunication);
             }
@@ -199,11 +196,11 @@ public class ParseJson {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject finalObjectCommunicationAnswer = jsonArray.getJSONObject(i);
                 InfoGameDataCommunicationAnswer infoGameDataCommunicationAnswer = new InfoGameDataCommunicationAnswer();
-                infoGameDataCommunicationAnswer.qid = finalObjectCommunicationAnswer.getString("qid");
-                infoGameDataCommunicationAnswer.answer = finalObjectCommunicationAnswer.getString("answer");
-                infoGameDataCommunicationAnswer.t = finalObjectCommunicationAnswer.getString("t");
-                infoGameDataCommunicationAnswer.i = finalObjectCommunicationAnswer.getString("i");
-                infoGameDataCommunicationAnswer.s = finalObjectCommunicationAnswer.getString("s");
+                infoGameDataCommunicationAnswer.setQid(finalObjectCommunicationAnswer.getString("qid"));
+                infoGameDataCommunicationAnswer.setAnswer(finalObjectCommunicationAnswer.getString("answer"));
+                infoGameDataCommunicationAnswer.setT(finalObjectCommunicationAnswer.getString("t"));
+                infoGameDataCommunicationAnswer.setI(finalObjectCommunicationAnswer.getString("i"));
+                infoGameDataCommunicationAnswer.setS(finalObjectCommunicationAnswer.getString("s"));
 
                 result.add(infoGameDataCommunicationAnswer);
             }

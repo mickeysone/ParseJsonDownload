@@ -39,20 +39,7 @@ public class MissionDetailAdapter extends RecyclerView.Adapter<MissionDetailAdap
 
     @Override
     public void onBindViewHolder(final DataObjectHolder holder, int position) {
-        holder.progressBar.setVisibility(View.VISIBLE);
         Glide.with(context).load("http://genetic-plus.org/presite/kare/" + detailDataset.get(position))
-                .listener(new RequestListener<String, GlideDrawable>() {
-                    @Override
-                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                        holder.progressBar.setVisibility(View.GONE);
-                        return false;
-                    }
-                })
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.imgExGameDetail);
     }
@@ -62,15 +49,14 @@ public class MissionDetailAdapter extends RecyclerView.Adapter<MissionDetailAdap
         return detailDataset.size();
     }
 
+
     public static class DataObjectHolder extends RecyclerView.ViewHolder {
         //ตัวแทนของ Layout mission_item.xml
         ImageView imgExGameDetail;
-        ProgressBar progressBar;
 
         public DataObjectHolder(View itemView) {
             super(itemView);
             imgExGameDetail = (ImageView) itemView.findViewById(R.id.imv_game_detail);
-            progressBar = (ProgressBar) itemView.findViewById(R.id.progressBar);
         }
     }
 }

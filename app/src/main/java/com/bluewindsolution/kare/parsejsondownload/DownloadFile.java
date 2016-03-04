@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -33,9 +34,8 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
     private ArrayList<ArrayList<String>> allLinksFile = new ArrayList<ArrayList<String>>();
 
     private String appId = "";
-    private String basePatch = "";
+    private String missionPatch = "";
 
-    private  CheckInternetConnection checkInternetConnection;
     boolean resultCheckConn = true;
     private String stToast = "Lost internet connection. Please download again.";
 
@@ -47,17 +47,18 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
     private int sumLinks = 0;
     private StringBuffer stPath = new StringBuffer();
 
-    public DownloadFile(Context context, String basePatch, String appId, ArrayList<ArrayList<String>> allArrayList) {
+    File createTxtFile;
+
+    public DownloadFile(Context context, String missionPatch, String appId, ArrayList<ArrayList<String>> allArrayList) {
         this.context = context;
         this.allArrayList = allArrayList;
-        this.basePatch = basePatch;
+        this.missionPatch = missionPatch;
         this.appId = appId;
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        checkInternetConnection = new CheckInternetConnection(context);
 
         for (int i = 0; i < allArrayList.size(); i++) {
             if (i <= 4) {
@@ -69,41 +70,41 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
             }
         }
 
-        File createFolder = new File(basePatch);
+        File createFolder = new File(missionPatch);
         if (!createFolder.exists()) {
             createFolder.mkdirs();
             stPath.append(createFolder.toString() + "\n");
         }
-        createFolder = new File(basePatch + "/Items");
+        createFolder = new File(missionPatch + "/Items");
         if (!createFolder.exists()) {
             createFolder.mkdirs();
             stPath.append(createFolder.toString() + "\n");
         }
-        createFolder = new File(basePatch + "/Learning");
+        createFolder = new File(missionPatch + "/Learning");
         if (!createFolder.exists()) {
             createFolder.mkdirs();
             stPath.append(createFolder.toString() + "\n");
         }
-        createFolder = new File(basePatch + "/Dodont");
+        createFolder = new File(missionPatch + "/Dodont");
         if (!createFolder.exists()) {
             createFolder.mkdirs();
             stPath.append(createFolder.toString() + "\n");
         }
-        createFolder = new File(basePatch + "/Communication");
-        if (!createFolder.exists()) {
-            createFolder.mkdirs();
-            stPath.append(createFolder.toString() + "\n");
-        }
-        createFolder = new File(basePatch + "/Communication/Answer");
+        createFolder = new File(missionPatch + "/Communication");
         if (!createFolder.exists()) {
             createFolder.mkdirs();
             stPath.append(createFolder.toString() + "\n");
         }
 
+        createTxtFile = new File(missionPatch, appId + ".txt");
+        if (!createTxtFile.exists()) {
+            stPath.append(createTxtFile.toString() + "\n");
+        }
+
         pd = new ProgressDialog(context);
         pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         pd.setTitle("Loading...");
-        pd.setMessage("Loading images...");
+        pd.setMessage("Loading files...");
         pd.setCancelable(false);
         pd.setIndeterminate(false);
         pd.setMax(sumLinks);
@@ -114,43 +115,43 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
     @Override
     protected String doInBackground(String... params) {
         for (int i = 0; i < allLinksImg.size(); i++) {
-            if (!checkInternetConnection.isInternetAvailable()) {
+            if (!CheckInternetConnection.isInternetAvailable(context)) {
                 resultCheckConn = false;
                 break;
             } else {
                 String addPath = "";
                 if (i == 0)
-                    addPath = basePatch;
+                    addPath = missionPatch;
                 else if (i == 1)
-                    addPath = basePatch + "/Items";
+                    addPath = missionPatch + "/Items";
                 else if (i == 2)
-                    addPath = basePatch + "/Learning";
+                    addPath = missionPatch + "/Learning";
                 else if (i == 3)
-                    addPath = basePatch + "/Dodont";
+                    addPath = missionPatch + "/Dodont";
                 else if (i == 4)
-                    addPath = basePatch + "/Communication/Answer";
+                    addPath = missionPatch + "/Communication";
 
-               LoadImage(allLinksImg.get(i), addPath, params[0]);
+                LoadImage(allLinksImg.get(i), addPath, params[0]);
             }
         }
         for (int i = 0; i < allLinksFile.size(); i++) {
-            if (!checkInternetConnection.isInternetAvailable()) {
+            if (!CheckInternetConnection.isInternetAvailable(context)) {
                 resultCheckConn = false;
                 break;
             } else {
                 String addPath = "";
                 if (i == 0)
-                    addPath = basePatch;
+                    addPath = missionPatch;
                 else if (i == 1)
-                    addPath = basePatch + "/Items";
+                    addPath = missionPatch + "/Items";
                 else if (i == 2)
-                    addPath = basePatch + "/Learning";
+                    addPath = missionPatch + "/Learning";
                 else if (i == 3)
-                    addPath = basePatch + "/Dodont";
+                    addPath = missionPatch + "/Dodont";
                 else if (i == 4)
-                    addPath = basePatch + "/Communication/";
+                    addPath = missionPatch + "/Communication/";
                 else if (i == 5)
-                    addPath = basePatch + "/Communication/Answer";
+                    addPath = missionPatch + "/Communication";
 
                 LoadFiles(allLinksFile.get(i), addPath, params[0]);
             }
@@ -175,14 +176,17 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
         pd.dismiss();
+        Button btnDownload = (Button) ((GameDetailActivity) context).findViewById(R.id.btn_gameDetail_download);
 
         if (!resultCheckConn) {
-            checkInternetConnection.showNotifications(stToast, Toast.LENGTH_LONG);
+            CheckInternetConnection.showNotifications(context, stToast, Toast.LENGTH_LONG);
+            btnDownload.setEnabled(true);
         } else if (resultCheckConn) {
-            Button btnDownload = (Button) ((GameDetailActivity) context).findViewById(R.id.btn_gameDetail_download);
+            AddPathMissionToTextFile();
             btnDownload.setEnabled(false);
             Toast.makeText(context, "Download Complete.", Toast.LENGTH_SHORT).show();
         }
+        AddFilePathToTextFile();
     }
 
     private InputStream OpenHttpConnection(String urlString) throws IOException {
@@ -213,6 +217,10 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
     }
 
     private void LoadImage(ArrayList<String> LinksImg, String addPath, String params) {
+        String filename = "", linkDownload = "";
+        File dir;
+        String[] arrFilename;
+
         File folder = new File(addPath);
         if (!folder.exists()) {
             folder.mkdirs();
@@ -220,20 +228,52 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
         }
 
         for (int i = 0; i < LinksImg.size(); i++) {
-            if (!checkInternetConnection.isInternetAvailable()) {
+            String[] stTemp = LinksImg.get(i).split(";");
+            if (stTemp.length <= 2 && stTemp[0].length() > 0) {
+                folder = new File(addPath + "/" + stTemp[0]);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                linkDownload = stTemp[1];
+                arrFilename = linkDownload.split("/");
+                filename = arrFilename[2];
+            } else if (stTemp.length == 3) {
+                folder = new File(addPath + "/" + stTemp[0]);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                folder = new File(addPath + "/" + stTemp[0] + "/Answer");
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                folder = new File(addPath + "/" + stTemp[0] + "/Answer/" + stTemp[1]);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                linkDownload = stTemp[2];
+                arrFilename = linkDownload.split("/");
+                filename = arrFilename[2];
+            } else {
+                linkDownload = stTemp[1];
+                arrFilename = linkDownload.split("/");
+                filename = arrFilename[2];
+            }
+            dir = new File(folder, filename);
+
+            if (!CheckInternetConnection.isInternetAvailable(context)) {
                 resultCheckConn = false;
                 break;
-            } else {
-                String[] stTemp = LinksImg.get(i).split(";");
-                if (stTemp[0].length() > 0) {
-                    folder = new File(addPath + "/" + stTemp[0]);
-                    if (!folder.exists()) {
-                        folder.mkdirs();
-                        stPath.append(folder.toString() + "\n");
-                    }
-                }
+            } else if (CheckInternetConnection.isInternetAvailable(context) && dir.exists()) {
+                countProgress++;
+                publishProgress(countProgress);
+            } else if (CheckInternetConnection.isInternetAvailable(context) && !dir.exists()) {
+                stPath.append(dir.toString() + "\n");
                 try {
-                    realURl = params + stTemp[1];
+                    realURl = params + linkDownload;
                     inputStream = OpenHttpConnection(realURl);
                     bitmap = BitmapFactory.decodeStream(inputStream);
                     inputStream.close();
@@ -242,43 +282,25 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
                 }
 
                 try {
-                    String[] arrFilename = stTemp[1].split("/");
-                    String filename = arrFilename[2];
-                    File dir = new File(folder, filename);
                     FileOutputStream out = new FileOutputStream(dir);
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     if (bitmap != null)
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                     out.write(bos.toByteArray());
                     out.close();
-
                     countProgress++;
-                    stPath.append(dir.toString() + "\n");
                     publishProgress(countProgress);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
-
-        try {
-            File createTxtFile = new File(basePatch, appId + ".txt");
-            if (!createTxtFile.exists()) {
-                stPath.append(createTxtFile.toString() + "\n");
-            }
-            FileWriter allPathInApp = new FileWriter(createTxtFile, true);
-            allPathInApp.append(stPath.toString());
-            allPathInApp.flush();
-            allPathInApp.close();
-            stPath = new StringBuffer();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void LoadFiles(ArrayList<String> LinksFile, String addPath, String params) {
+        String filename = "", linkDownload = "";
+        File dir;
+        String[] arrFilename;
         File folder = new File(addPath);
         if (!folder.exists()) {
             folder.mkdirs();
@@ -289,29 +311,57 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
         InputStream is = null;
 
         for (int i = 0; i < LinksFile.size(); i++) {
-            if (!checkInternetConnection.isInternetAvailable()) {
+            String[] stTemp = LinksFile.get(i).split(";");
+            if (stTemp.length <= 2 && stTemp[0].length() > 0) {
+                folder = new File(addPath + "/" + stTemp[0]);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                linkDownload = stTemp[1];
+                arrFilename = linkDownload.split("/");
+                filename = arrFilename[2];
+            } else if (stTemp.length == 3 ) {
+                folder = new File(addPath + "/" + stTemp[0]);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                folder = new File(addPath + "/" + stTemp[0] + "/Answer");
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                folder = new File(addPath + "/" + stTemp[0] + "/Answer/" + stTemp[1]);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    stPath.append(folder.toString() + "\n");
+                }
+                linkDownload = stTemp[2];
+                arrFilename = linkDownload.split("/");
+                filename = arrFilename[2];
+            } else {
+                linkDownload = stTemp[1];
+                arrFilename = linkDownload.split("/");
+                filename = arrFilename[2];
+            }
+            dir = new File(folder, filename);
+            stPath.append(dir.toString() + "\n");
+
+            if (!CheckInternetConnection.isInternetAvailable(context)) {
                 resultCheckConn = false;
                 break;
-            } else {
-                String[] stTemp = LinksFile.get(i).split(";");
-                if (stTemp[0].length() > 0) {
-                    folder = new File(addPath + "/" + stTemp[0]);
-                    if (!folder.exists()) {
-                        folder.mkdirs();
-                        stPath.append(folder.toString() + "\n");
-                    }
-                }
+            } else if (CheckInternetConnection.isInternetAvailable(context) && dir.exists()){
+                countProgress++;
+                publishProgress(countProgress);
+            } else if (CheckInternetConnection.isInternetAvailable(context) && !dir.exists()) {
                 try {
-                    u = new URL(params + LinksFile.get(i).split(";")[1]);
+                    u = new URL(params + linkDownload);
                     is = u.openStream();
                     HttpURLConnection huc = (HttpURLConnection) u.openConnection();//to know the size of video
                     int size = huc.getContentLength();
 
                     if (huc != null) {
-                        String[] arrFilename = stTemp[1].split("/");
-                        String fileName = arrFilename[2];
-                        File dir = new File(folder, fileName);
-
                         FileOutputStream fos = new FileOutputStream(dir);
                         byte[] buffer = new byte[1024];
                         //long total = 0;
@@ -323,15 +373,12 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
                                 fos.write(buffer, 0, len1);
                             }
                             countProgress++;
-                            stPath.append(dir.toString() + "\n");
                             publishProgress(countProgress);
                         }
                         if (fos != null) {
                             fos.close();
                         }
                     }
-                } catch (MalformedURLException mue) {
-                    mue.printStackTrace();
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 } finally {
@@ -345,8 +392,7 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
                 }
             }
         }
-
-        try {
+/*        try {
             File createTxtFile = new File(basePatch, appId + ".txt");
             if (!createTxtFile.exists()) {
                 stPath.append(createTxtFile.toString() + "\n");
@@ -356,6 +402,29 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
             allPathInApp.flush();
             allPathInApp.close();
             stPath = new StringBuffer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+    }
+
+    public void AddPathMissionToTextFile() {
+        try {
+            File createMissionTxtFile = new File(GetDownloadData.basePatch, "Mission.txt");
+            FileWriter missionTextFile = new FileWriter(createMissionTxtFile, true);
+            missionTextFile.append(GetDownloadData.statusMissionPath + "\n");
+            missionTextFile.flush();
+            missionTextFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void AddFilePathToTextFile() {
+        try {
+            FileWriter allPathInApp = new FileWriter(createTxtFile, true);
+            allPathInApp.append(stPath.toString());
+            allPathInApp.flush();
+            allPathInApp.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

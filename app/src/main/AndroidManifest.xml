@@ -19,11 +19,17 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GameDetailActivity"></activity>
-        <meta-data android:name="com.bluewindsolution.kare.parsejsondownload.GlideConfiguration" android:value="GlideModule"/>
+        <activity android:name=".GameDetailActivity" />
+
+        <meta-data
+            android:name="com.bluewindsolution.kare.parsejsondownload.GlideConfiguration"
+            android:value="GlideModule" />
+
+        <activity android:name=".DisplayFileActivity" />
     </application>
 
 </manifest>

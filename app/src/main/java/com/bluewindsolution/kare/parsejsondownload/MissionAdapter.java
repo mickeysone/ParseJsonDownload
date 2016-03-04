@@ -37,46 +37,28 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionAdapter.DataObje
 
     @Override
     public DataObjectHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        //นำ viewHolder แต่ละอันมาใส่ position ให้มัน
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.mission_item, parent, false);
-        DataObjectHolder dataObjectHolder = new DataObjectHolder(view);
-        return dataObjectHolder;
+        return new DataObjectHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final DataObjectHolder holder, int position) {
-        holder.txtMissionId.setText(missionDataset.get(position).id);
+        holder.txtMissionId.setText(missionDataset.get(position).getId());
         holder.txtMissionId.setVisibility(View.GONE);
-        holder.txtMissionName.setText(missionDataset.get(position).name);
-        holder.progressBar.setVisibility(View.VISIBLE);
-        Glide.with(context).load("http://genetic-plus.org/presite/kare/" + missionDataset.get(position).img)
-                .diskCacheStrategy(DiskCacheStrategy.ALL).listener(new RequestListener<String, GlideDrawable>() {
-            @Override
-            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                return false;
-            }
-
-            @Override
-            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                holder.progressBar.setVisibility(View.GONE);
-                return false;
-            }
-        })
+        holder.txtMissionName.setText(missionDataset.get(position).getName());
+        Glide.with(context).load("http://genetic-plus.org/presite/kare/" + missionDataset.get(position).getImg())
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.imgMissionImage);
     }
 
     @Override
     public int getItemCount()  {
-        //รีเทิร์นค่าจำนวนไอเท็ม
         return missionDataset.size();
     }
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder {
-        //ตัวแทนของ Layout mission_item.xml
-
         ImageView imgMissionImage;
         TextView txtMissionName, txtMissionId;
-        ProgressBar progressBar;
 
         public DataObjectHolder(View itemView) {
             super(itemView);
@@ -84,7 +66,6 @@ public class MissionAdapter extends RecyclerView.Adapter<MissionAdapter.DataObje
             txtMissionId = (TextView) itemView.findViewById(R.id.txt_mission_id);
             txtMissionName = (TextView) itemView.findViewById(R.id.txt_mission_name);
             imgMissionImage = (ImageView) itemView.findViewById(R.id.ivImg);
-            progressBar = (ProgressBar) itemView.findViewById(R.id.pb_mission_item) ;
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

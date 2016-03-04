@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -27,29 +28,35 @@ public class MainActivity extends AppCompatActivity {
 
     private String lang, stToast  = "Please connect to the internet.";
 
-    private CheckInternetConnection checkInternetConnection = new CheckInternetConnection(this);
-
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private MissionAdapter missionAdapter;
 
-    private ProgressDialog pd;
+    private ProgressBar pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        pd = new ProgressDialog(this);
+/*        pd = new ProgressDialog(this);
         pd.setIndeterminate(true);
         pd.setCancelable(false);
-        pd.setMessage("Loading. Please wait...");
+        pd.setMessage("Loading. Please wait...");*/
 
-        if (!checkInternetConnection.isInternetAvailable()) {
-            checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
+        recyclerView = (RecyclerView) findViewById(R.id.rcv_mainpage);
+        layoutManager = new LinearLayoutManager(MainActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        pb = (ProgressBar) findViewById(R.id.pb_mainpage);
+        pb.setVisibility(View.VISIBLE);
+
+        if (!CheckInternetConnection.isInternetAvailable(this)) {
+            CheckInternetConnection.showNotifications(this, stToast, Toast.LENGTH_SHORT);
+            pb.setVisibility(View.GONE);
         } else {
             lang = "TH";
-            new GetMainPageData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://genetic-plus.org/presite/kare/api/getStore.php?lang=" + lang);
+            new GetMainPageData().execute("http://genetic-plus.org/presite/kare/api/getStore.php?lang=" + lang);
         }
     }
 
@@ -63,8 +70,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                if (!checkInternetConnection.isInternetAvailable()) {
-                    checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
+                if (!CheckInternetConnection.isInternetAvailable(this)) {
+                    CheckInternetConnection.showNotifications(this, stToast, Toast.LENGTH_SHORT);
                 } else {
                     recreate();
                 }
@@ -72,20 +79,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (!checkInternetConnection.isInternetAvailable()) {
-            checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
-        }
-    }
-
     public class GetMainPageData extends AsyncTask<String, Integer, ArrayList<MissionData>> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.show();
         }
 
         @Override
@@ -142,24 +140,29 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<MissionData> result) {
             super.onPostExecute(result);
-            pd.dismiss();
+            pb.setVisibility(View.GONE);
 
-            recyclerView = (RecyclerView) findViewById(R.id.rcv_mainpage);
-            layoutManager = new LinearLayoutManager(MainActivity.this);
-            recyclerView.setLayoutManager(layoutManager);
-            missionAdapter = new MissionAdapter(result, MainActivity.this);
-            recyclerView.setAdapter(missionAdapter);
+            if (result != null) {
+                missionAdapter = new MissionAdapter(result, MainActivity.this);
+                recyclerView.setAdapter(missionAdapter);
+            } else {
+                missionAdapter = new MissionAdapter(new ArrayList<MissionData>(), MainActivity.this);
+                recyclerView.setAdapter(missionAdapter);
+            }
 
             missionAdapter.SetOnItemClickListener(new MissionAdapter.OnItemClickListener() {
                 @Override
                 public void OnItemClick(String appId, String appName, View view) {
-                    if (!checkInternetConnection.isInternetAvailable()) {
+/*                    if (!checkInternetConnection.isInternetAvailable()) {
                         checkInternetConnection.showNotifications(stToast, Toast.LENGTH_SHORT);
                     } else {
                         Intent intent = new Intent(MainActivity.this, GameDetailActivity.class);
                         intent.putExtra("appID", appId);
                         startActivity(intent);
-                    }
+                    }*/
+                    Intent intent = new Intent(MainActivity.this, GameDetailActivity.class);
+                    intent.putExtra("appID", appId);
+                    startActivity(intent);
                 }
             });
         }
